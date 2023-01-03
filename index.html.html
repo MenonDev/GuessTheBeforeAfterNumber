@@ -1,0 +1,189 @@
+<html>
+
+<head>
+	<title>Number guessing game</title>
+	<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+
+<body class="bg-gray-100 h-screen flex flex-col justify-center items-center">
+	<div class="fixed top-0 right-0 p-4">
+		<button id="settings-button" class="text-blue-500 hover:text-blue-600">Settings</button>
+	</div>
+	<div class="flex justify-center items-center">
+		<div id="settings-modal"
+			class="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-100 opacity-0 pointer-events-none">
+			<div class="w-1/3 bg-white rounded-lg shadow-lg p-4">
+				<form id="settings-form" class="mb-4">
+					<label for="numbers-between" class="block font-bold text-lg mb-2">Numbers
+						between:</label>
+					<div class="flex items-center w-full">
+						<input type="number" id="numbers-from" name="numbers-from"
+							placeholder="From" class="border rounded py-2 px-3">
+						<span class="">
+							-
+						</span>
+						<input type="number" id="numbers-to" name="numbers-to" placeholder="To"
+							class="border rounded py-2 px-3">
+					</div>
+					<br>
+					<label for="language"
+						class="block font-bold text-lg mt-4 mb-2">Language:</label>
+					<select id="language" name="language" class="border rounded w-full py-2 px-3">
+						<option value="en">English</option>
+						<!-- <option Value="fr">French</option>
+						<option value="hi">Hindi</option> -->
+					</select>
+				</form>
+				<div class="flex justify-end">
+					<button id="save-button" class="bg-blue-500 text-white rounded py-2 px-4"
+						onclick="saveSettings()">Save</button>
+					<button id="close-modal-button"
+						class="bg-gray-500 hover:bg-gray-600 text-white rounded ml-2 py-2 px-4">Close</button>
+				</div>
+			</div>
+		</div>
+		<div class="w-64 h-64 rounded-full bg-gray-200 flex justify-center items-center">
+			<div id="number" class="text-6xl font-bold">0</div>
+		</div>
+		<div class="m-10">
+			<form id="guess-form" class="mt-8">
+				<label for="before" class="block font-bold text-lg mb-2">Number before:</label>
+				<input type="number" id="before" name="before" class="border rounded w-full py-2 px-3">
+				<br>
+				<label for="after" class="block font-bold text-lg mt-4 mb-2">Number after:</label>
+				<input type="number" id="after" name="after" class="border rounded w-full py-2 px-3">
+				<br>
+				<button type="submit"
+					class="bg-blue-500 text-white rounded py-2 px-4 mt-4">Guess</button>
+			</form>
+		</div>
+	</div>
+	<div id="result" class="text-2xl font-bold mt-8 align-center"></div>
+	<div class="text-sm fixed bottom-0">Created with ChatGPT</div>
+
+
+	<script>
+		const settingsButton = document.getElementById('settings-button');
+		const settingsModal = document.getElementById('settings-modal');
+		const closeModalBtn = document.getElementById('close-modal-button')
+
+		settingsButton.addEventListener('click', () => {
+			OpenModal();
+		});
+
+		closeModalBtn.addEventListener('click', () => {
+			CloseModal();
+		});
+
+		function OpenModal() {
+			settingsModal.classList.remove('opacity-0', 'pointer-events-none');
+			settingsModal.classList.add('opacity-100', 'pointer-events-auto');
+		}
+
+		function CloseModal() {
+			settingsModal.classList.remove('opacity-100', 'pointer-events-none');
+			settingsModal.classList.add('opacity-0', 'pointer-events-auto');
+		}
+
+		const form = document.getElementById('guess-form');
+		var number;
+
+		form.addEventListener('submit', event => {
+			event.preventDefault();
+
+			const before = document.getElementById('before').value;
+			const after = document.getElementById('after').value;
+			const resultElement = document.getElementById('result');
+
+			if (before == number - 1 && after == number + 1) {
+				resultElement.innerHTML = 'Yay, you gave the right answer!';
+				showSuccess();
+			} else {
+				resultElement.innerHTML = 'Oh no try again!!';
+			}
+		});
+
+		newNumber();
+
+		function saveSettings() {
+			var fromNum = document.getElementById("numbers-from");
+			var toNum = document.getElementById("numbers-to");
+
+			localStorage.setItem("GuessNumberFrom", fromNum.value);
+			localStorage.setItem("GuessNumberTo", toNum.value);
+			CloseModal();
+		}
+
+		function showSuccess() {
+			fireAway();
+			setTimeout(newNumber, 3000);
+		}
+
+		function clearInputs() {
+			const resultElement = document.getElementById('result');
+			resultElement.innerHTML = "";
+			document.getElementById('before').value = '';
+			document.getElementById('after').value = '';
+		}
+
+		function newNumber() {
+			clearInputs();
+			var fromVal = parseInt(localStorage.getItem("GuessNumberFrom"));
+			var toVal = parseInt(localStorage.getItem("GuessNumberTo"));
+
+			if (isNaN(fromVal)) {
+				fromVal = 0;
+			}
+
+			if (isNaN(toVal)) {
+				toVal = 100;
+			}
+
+
+
+			number = Math.floor(Math.random() * (toVal - fromVal + 1) + fromVal);
+			document.getElementById('number').innerHTML = number;
+		}
+
+		var count = 400;
+		var defaults = {
+			origin: { y: 0.7 }
+		};
+
+		function fire(particleRatio, opts) {
+			confetti(Object.assign({}, defaults, opts, {
+				particleCount: Math.floor(count * particleRatio)
+			}));
+		}
+
+		function fireAway() {
+			console.log("In fireAway")
+			fire(0.25, {
+				spread: 26,
+				startVelocity: 55,
+			});
+			fire(0.2, {
+				spread: 60,
+			});
+			fire(0.35, {
+				spread: 100,
+				decay: 0.91,
+				scalar: 0.8
+			});
+			fire(0.1, {
+				spread: 120,
+				startVelocity: 25,
+				decay: 0.92,
+				scalar: 1.2
+			});
+			fire(0.1, {
+				spread: 120,
+				startVelocity: 45,
+			});
+		}
+
+	</script>
+</body>
+
+</html>
